@@ -17,11 +17,11 @@ pub fn execute() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
 
     lines.sort();
-    println!("Day 1 - part 1 - {:?}", &lines);
+    println!("part 1 - {:?}", &lines);
 
     let sum: u32 = lines.iter().rev().take(3).sum();
 
-    println!("Day 1 - part 2 - {:?}", &sum);
+    println!("part 2 - {:?}", &sum);
 
     Ok(())
 }
