@@ -50,5 +50,53 @@ pub fn execute() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("part 1 - {}", score);
 
+    part_2(data);
+
     Ok(())
+}
+
+fn part_2(data: String) -> () {
+    let mut parts: Vec<Vec<String>> = vec![Vec::new()];
+
+    data.lines().enumerate().for_each(|(i, x)| {
+        // Make sure a new vector is ready to push to
+        if (i > 0) && (i % 3 == 0) {
+            parts.push(Vec::new());
+        }
+
+        let current_length = parts.len();
+        parts[current_length - 1].push(x.to_string());
+    });
+
+    let score = parts
+        .iter()
+        .map(|part: &Vec<String>| {
+            if let Some(base_string) = part.first() {
+                let mut mutable = base_string.clone();
+
+                part[1..part.len()].iter().for_each(|s| {
+                    mutable = s
+                        .chars()
+                        .filter(|c| mutable.contains(*c))
+                        .map(|c| c.to_string())
+                        .collect::<Vec<String>>()
+                        .join("");
+                });
+
+                if let Some(char) = mutable.chars().next() {
+                    if let Some(pos) = ALPHABET
+                        .chars()
+                        .position(|c| c.to_string().eq(&char.to_string()))
+                    {
+                        // Plus one since index starts at 0
+                        return pos + 1;
+                    }
+                }
+            }
+
+            0
+        })
+        .sum::<usize>();
+
+    println!("part 2 - {}", score);
 }
