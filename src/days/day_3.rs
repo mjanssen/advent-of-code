@@ -72,7 +72,7 @@ fn part_2(data: String) -> () {
         .iter()
         .map(|part: &Vec<String>| {
             if let Some(base_string) = part.first() {
-                let mut mutable = base_string.clone();
+                let mut mutable = base_string.to_owned();
 
                 part[1..part.len()].iter().for_each(|s| {
                     mutable = s
