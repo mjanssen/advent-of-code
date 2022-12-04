@@ -6,6 +6,8 @@ use super::ExecuteResponse;
 pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_4.txt")?;
 
+    let mut overlaps = 0u32;
+
     let score: u32 = data
         .lines()
         .map(|l| {
@@ -13,6 +15,7 @@ pub fn execute() -> ExecuteResponse {
             let ranges: Vec<Range<u8>> = groups
                 .iter()
                 .map(|r: &&str| {
+                    // Create the ranges for this line (eg. 3-4,5-99 > <Range(3..4), Range(5..99)>)
                     let range = r.split("-").collect::<Vec<&str>>();
                     let start: u8 = match range.get(0) {
                         Some(s) => match s.parse::<u8>() {
@@ -47,10 +50,17 @@ pub fn execute() -> ExecuteResponse {
                 _ => &(0..0),
             };
 
+            // Trick for pt 2 :)
+            if first_range.end >= second_range.start && first_range.start <= second_range.end {
+                overlaps += 1;
+            }
+
+            // If first range contains second range
             if first_range.start <= second_range.start && first_range.end >= second_range.end {
                 return 1u32;
             }
 
+            // If second range contains first range
             if second_range.start <= first_range.start && second_range.end >= first_range.end {
                 return 1u32;
             }
@@ -60,6 +70,7 @@ pub fn execute() -> ExecuteResponse {
         .sum();
 
     println!("part 1 - {:?}", score);
+    println!("part 2 - {:?}", overlaps);
 
     Ok(())
 }
