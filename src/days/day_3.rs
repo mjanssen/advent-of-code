@@ -1,5 +1,7 @@
 use crate::lib::load_file::load_data_file;
 
+use super::ExecuteResponse;
+
 static ALPHABET: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 #[derive(Debug)]
@@ -10,7 +12,7 @@ struct Line<'a> {
     score: Option<usize>,
 }
 
-pub fn execute() -> Result<(), Box<dyn std::error::Error>> {
+pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_3.txt")?;
     let score: usize = data
         .lines()

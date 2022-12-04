@@ -1,6 +1,8 @@
 use crate::lib::load_file::load_data_file;
 
-pub fn execute() -> Result<(), Box<dyn std::error::Error>> {
+use super::ExecuteResponse;
+
+pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_1.txt")?;
 
     let mut lines: Vec<u32> = data

@@ -4,6 +4,8 @@
 
 use crate::lib::load_file::load_data_file;
 
+use super::ExecuteResponse;
+
 fn get_bet_score(bet: &str) -> u32 {
     match bet {
         "X" => 1,
@@ -36,7 +38,7 @@ fn get_round_score(opponent_bet: &str, bet: &str) -> u32 {
     score + get_bet_score(bet)
 }
 
-pub fn execute() -> Result<(), Box<dyn std::error::Error>> {
+pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_2.txt")?;
     let scores: Vec<u32> = data
         .lines()
