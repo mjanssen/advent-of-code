@@ -38,6 +38,8 @@ fn run(input: &Vec<&str>, part_2: bool) {
     parsed_box_lines = parsed_box_lines[0..parsed_box_lines.len() - 1].to_vec();
 
     parsed_box_lines.iter().for_each(|items| {
+        for (i, item) in items.iter().rev().enumerate() {}
+
         items
             .iter()
             .enumerate()
