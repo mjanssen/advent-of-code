@@ -14,11 +14,7 @@ struct Unique {
 fn check(data: &str, length: usize) -> () {
     let mut unique: Option<Unique> = None;
 
-    let chars = data
-        .chars()
-        // Filter any newlines
-        .filter(|c| c.to_string().ne(&String::from("\n")))
-        .collect::<Vec<char>>();
+    let chars = data.chars().collect::<Vec<char>>();
 
     chars.iter().enumerate().for_each(|(i, _)| {
         if unique == None {
