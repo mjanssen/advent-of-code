@@ -171,8 +171,6 @@ pub fn execute() -> ExecuteResponse {
         }
     }
 
-    println!("{:?}", trees);
-
     let visible: Vec<&Tree> = trees
         .iter()
         .flat_map(|t| t)
