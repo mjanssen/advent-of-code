@@ -13,8 +13,8 @@ pub fn execute() -> ExecuteResponse {
 
     // Make tree structure as following
     // [
-    //   [(false, 23),(false, 12),(false, 5),(false, 26),(false, 57)]
-    //   [(false, 23),(false, 12),(false, 5),(false, 26),(false, 57)]
+    //   [(false, 23, (T, R, B, L)),(false, 12, (T, R, B, L)),(false, 5, (T, R, B, L)),(false, 26, (T, R, B, L)),(false, 57, (T, R, B, L))]
+    //   [(false, 23, (T, R, B, L)),(false, 12, (T, R, B, L)),(false, 5, (T, R, B, L)),(false, 26, (T, R, B, L)),(false, 57, (T, R, B, L))]
     // ]
     data.lines()
         .into_iter()
