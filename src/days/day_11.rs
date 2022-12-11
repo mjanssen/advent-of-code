@@ -4,33 +4,35 @@ use regex::Regex;
 
 use crate::lib::load_file::load_data_file;
 
+static PUZZLE_PART: u8 = 2;
+
 use super::ExecuteResponse;
 
 #[derive(Debug)]
 struct Monkey {
     no: usize,
-    inspects: i32,
-    items: Vec<f64>,
+    inspects: u128,
+    items: Vec<u128>,
     operation: (String, String, String),
-    test_number: i64,
+    test_number: u128,
     target_true: usize,
     target_false: usize,
 }
 
 impl Monkey {
-    fn get_worry_level(&self, item: f64) -> f64 {
+    fn get_worry_level(&self, item: u128, modulo: u128) -> u128 {
         let (one, operator, two) = &self.operation;
-        let a: f64 = match one.as_str() {
+        let a: u128 = match one.as_str() {
             "old" => item,
-            _ => match one.parse::<f64>() {
+            _ => match one.parse::<u128>() {
                 Ok(n) => n,
                 _ => item,
             },
         };
 
-        let b: f64 = match two.as_str() {
+        let b: u128 = match two.as_str() {
             "old" => item,
-            _ => match two.parse::<f64>() {
+            _ => match two.parse::<u128>() {
                 Ok(n) => n,
                 _ => item,
             },
@@ -42,18 +44,22 @@ impl Monkey {
             _ => a * b,
         };
 
-        (worry_level as f64 / 3.0).floor()
+        if PUZZLE_PART == 2 {
+            return worry_level % modulo;
+        }
+
+        (worry_level as f64 / 3.0).floor() as u128
     }
 
-    fn get_item(&mut self) -> Option<f64> {
+    fn get_item(&mut self) -> Option<u128> {
         self.items.pop()
     }
 
-    fn check_if_divisible(&self, worry_level: i64) -> bool {
+    fn check_if_divisible(&self, worry_level: u128) -> bool {
         (worry_level % self.test_number) == 0
     }
 
-    fn get_target_monkey(&self, worry_level: i64) -> usize {
+    fn get_target_monkey(&self, worry_level: u128) -> usize {
         if self.check_if_divisible(worry_level) {
             return self.target_true;
         }
@@ -65,11 +71,18 @@ impl Monkey {
 pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_11.txt")?;
 
-    let playable_rounds = 20;
+    let playable_rounds = 10000;
 
     let mut monkeys = parse_monkeys(&data);
 
-    let mut throwed_items: HashMap<usize, Vec<f64>> = HashMap::new();
+    // Modulo calc used for part 2
+    let modulo = monkeys
+        .iter()
+        .map(|m| m.test_number)
+        .reduce(|acc: u128, curr: u128| acc * curr)
+        .unwrap_or(0);
+
+    let mut throwed_items: HashMap<usize, Vec<u128>> = HashMap::new();
 
     for _ in 0..playable_rounds {
         for monkey in monkeys.iter_mut() {
@@ -88,8 +101,8 @@ pub fn execute() -> ExecuteResponse {
 
             for _ in 0..monkey.items.len() {
                 if let Some(item) = monkey.get_item() {
-                    let worry_level = monkey.get_worry_level(item);
-                    let target = monkey.get_target_monkey(worry_level as i64);
+                    let worry_level = monkey.get_worry_level(item, modulo);
+                    let target = monkey.get_target_monkey(worry_level as u128);
 
                     // println!("Monkey {} throws {} to {}", monkey.no, worry_level, target);
 
@@ -107,27 +120,13 @@ pub fn execute() -> ExecuteResponse {
         }
     }
 
-    // Settle all dangling throwed items
-    monkeys.iter_mut().for_each(|monkey| {
-        match throwed_items.get(&monkey.no) {
-            Some(items) => {
-                monkey.items.append(&mut items.to_vec());
-
-                // Reset throwed items for this monkey
-                throwed_items.insert(monkey.no, vec![]);
-            }
-            _ => {}
-        }
-    });
-
     // Sort monkeys by inspects
     monkeys.sort_by(|a, b| b.inspects.cmp(&a.inspects));
-    println!("part 1 - {}", monkeys[0].inspects * monkeys[1].inspects);
-
-    monkeys.iter().for_each(|monkey| {
-        println!("Monkey {} did: {} inspects", monkey.no, monkey.inspects);
-        println!("Monkey {} has: {:?}", monkey.no, monkey.items);
-    });
+    println!(
+        "part {} - {}",
+        PUZZLE_PART,
+        monkeys[0].inspects * monkeys[1].inspects
+    );
 
     Ok(())
 }
@@ -139,7 +138,7 @@ fn parse_monkeys(data: &str) -> Vec<Monkey> {
     data.split("\n\n")
         .enumerate()
         .map(|(monkey_index, data)| {
-            let mut items: Vec<f64> = vec![];
+            let mut items: Vec<u128> = vec![];
             let mut operation: (String, String, String) =
                 ("".to_string(), "".to_string(), "".to_string());
 
@@ -152,7 +151,7 @@ fn parse_monkeys(data: &str) -> Vec<Monkey> {
 
             // Collect items for monkey
             for cap in number_regex.captures_iter(lines[1]) {
-                match &cap[0].parse::<f64>() {
+                match &cap[0].parse::<u128>() {
                     Ok(n) => items.push(*n),
                     _ => (),
                 }
@@ -167,7 +166,7 @@ fn parse_monkeys(data: &str) -> Vec<Monkey> {
 
             // Test number
             for cap in number_regex.captures_iter(lines[3]) {
-                test_number = match &cap[0].parse::<i64>() {
+                test_number = match &cap[0].parse::<u128>() {
                     Ok(n) => *n,
                     _ => 0,
                 };
