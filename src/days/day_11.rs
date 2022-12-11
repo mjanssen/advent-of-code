@@ -71,7 +71,10 @@ impl Monkey {
 pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_11.txt")?;
 
-    let playable_rounds = 10000;
+    let playable_rounds = match PUZZLE_PART {
+        2 => 10000,
+        _ => 20,
+    };
 
     let mut monkeys = parse_monkeys(&data);
 
