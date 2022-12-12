@@ -33,6 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     methods.insert(String::from("day9"), days::day_9::execute);
     methods.insert(String::from("day10"), days::day_10::execute);
     methods.insert(String::from("day11"), days::day_11::execute);
+    methods.insert(String::from("day12"), days::day_12::execute);
 
     let method = match methods.get(day) {
         Some(function) => function,
