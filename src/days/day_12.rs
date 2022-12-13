@@ -58,8 +58,6 @@ impl Position {
 #[derive(Debug, Clone, Default)]
 struct MapItem {
     height: isize,
-    x: isize,
-    y: isize,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -80,7 +78,7 @@ impl PartialOrd for DijkstraNode {
     }
 }
 
-static PUZZLE_PART: u8 = 2;
+static PUZZLE_PART: u8 = 1;
 
 pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_12.txt")?;
@@ -177,11 +175,7 @@ fn build_board(data: &str) -> (Position, Position, Vec<Vec<MapItem>>) {
                 },
             };
 
-            map[vertical_index][horizontal_index] = MapItem {
-                x: horizontal_index as isize,
-                y: vertical_index as isize,
-                height,
-            };
+            map[vertical_index][horizontal_index] = MapItem { height };
         });
     });
 
