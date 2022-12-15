@@ -1,179 +1,140 @@
+use std::cmp::Ordering;
+
 use serde_json::{json, Value};
 
 use crate::lib::load_file::load_data_file;
 
 use super::ExecuteResponse;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq)]
 struct Pair {
     number: usize,
     left: Value,
     right: Value,
 }
 
-// #[derive(Debug)]
-// enum Item {
-//     Number(u32),
-//     List(Vec<Item>),
-// }
-
 pub fn execute() -> ExecuteResponse {
     let data = load_data_file("day_13.txt")?;
     let pairs: Vec<Pair> = parse(&data);
 
-    let mut ordered: Vec<Pair> = vec![];
-    let mut unordered: Vec<Pair> = vec![];
-
+    // Part 1
+    let mut score = 0;
     for pair in pairs.iter() {
-        // If left is empty, it's ordered
-        // if pair.left.is_null() {
-        //     ordered.push(pair.clone());
-        //     continue;
-        // }
+        let order = compare(&pair.left, &pair.right);
 
-        // // If right is empty, not ordered
-        // if pair.right.is_null() {
-        //     unordered.push(pair.clone());
-        //     continue;
-        // }
-
-        let left = pair.left.as_array().unwrap();
-        let right = pair.right.as_array().unwrap();
-
-        if compare_array(left, right, false) {
-            ordered.push(pair.to_owned());
-        } else {
-            unordered.push(pair.to_owned());
+        if order.is_lt() {
+            score += pair.number;
         }
     }
 
-    let score = ordered.iter().fold(0, |acc, p| acc + p.number);
-
     println!("part 1 - {}", score);
+
+    // Part 2 - Create new unordered vec with all items
+    let mut unordered = pairs.into_iter().fold(Vec::new(), |mut acc, item| {
+        acc.push(item.left);
+        acc.push(item.right);
+
+        acc
+    });
+
+    let add_arr_two: Value = serde_json::from_str("[[2]]").unwrap();
+    let add_arr_six: Value = serde_json::from_str("[[6]]").unwrap();
+
+    unordered.push(add_arr_two.clone());
+    unordered.push(add_arr_six.clone());
+
+    let mut ordered: Vec<_> = Vec::new();
+    ordered.push(&unordered[0]);
+
+    for item in unordered.iter() {
+        for (index, current) in ordered.clone().iter().enumerate() {
+            let exists: Vec<&&Value> = ordered.iter().filter(|f| f.to_owned().eq(&item)).collect();
+            // Skip if it already exists in the ordered list
+            if exists.len() > 0 {
+                break;
+            }
+
+            let order = compare(item, current);
+
+            // If item < current item, insert before
+            if order.is_lt() {
+                ordered.insert(index, item);
+                break;
+            }
+
+            // If greater than last item, push it to the end (no break needed)
+            if order.is_eq() && index == ordered.len() - 1 {
+                ordered.push(item);
+                break;
+            }
+
+            // If greater than last item, push it to the end (no break needed)
+            if order.is_gt() && index == ordered.len() - 1 {
+                ordered.push(item);
+            }
+        }
+    }
+
+    let part_2: usize = ordered.into_iter().enumerate().fold(1, |acc, (i, item)| {
+        if item.clone().eq(&add_arr_two) || item.clone().eq(&add_arr_six) {
+            return acc * (i + 1);
+        }
+
+        acc
+    });
+
+    println!("part 2 - {}", part_2);
 
     Ok(())
 }
 
-fn compare_array(first: &Vec<Value>, second: &Vec<Value>, mixed: bool) -> bool {
-    let mut ordered: bool = true;
+fn compare(first: &Value, second: &Value) -> Ordering {
+    match (first, second) {
+        (Value::Array(left), Value::Array(right)) => {
+            let mut index = 0;
 
-    println!("f {:?}", first);
-    println!("s {:?}", second);
-
-    // Left side ran out of items, so inputs are in the right order
-    if first.is_empty() && second.is_empty() == false {
-        return true;
-    }
-
-    // Right side ran out of items, so inputs are not in the right order
-    if first.is_empty() == false && second.is_empty() {
-        return false;
-    }
-
-    // Mixed only checks one item
-    if mixed {
-        if let Some(f) = first.get(0) {
-            if let Some(s) = second.get(0) {
-                if let Some(f_num) = f.as_u64() {
-                    if let Some(s_num) = s.as_u64() {
-                        if f_num > s_num {
-                            return false;
-                        } else {
-                            return true;
+            while index < left.len() && index < right.len() {
+                // If there are still items available
+                match (left[index].clone(), right[index].clone()) {
+                    // If they're both numbers, match them if they're unequal and return ordering
+                    (Value::Number(l), Value::Number(r)) => {
+                        if l.as_u64() != r.as_u64() {
+                            return l.as_u64().unwrap().cmp(&r.as_u64().unwrap());
                         }
                     }
-                }
+                    // Recursive strategy below
+                    // If left side is array and right side is number
+                    (Value::Array(l), Value::Number(r)) => {
+                        let check = compare(&Value::from(l), &json!([r.as_u64()]));
+                        if check.is_eq() == false {
+                            return check;
+                        }
+                    }
+                    // If right side is array and left side is number
+                    (Value::Number(l), Value::Array(r)) => {
+                        let check = compare(&json!([l.as_u64()]), &Value::from(r));
+                        if check.is_eq() == false {
+                            return check;
+                        }
+                    }
+                    // If left and right side are array
+                    (Value::Array(l), Value::Array(r)) => {
+                        let check = compare(&Value::from(l), &Value::from(r));
+                        if check.is_eq() == false {
+                            return check;
+                        }
+                    }
+                    _ => (),
+                };
+
+                // Go to next item in list
+                index += 1;
             }
+
+            left.len().cmp(&right.len())
         }
+        _ => panic!("???"),
     }
-
-    let first_has_all_numbers: bool = first.iter().filter(|p| p.is_number() == false).count() == 0;
-
-    let second_has_all_numbers: bool =
-        second.iter().filter(|p| p.is_number() == false).count() == 0;
-
-    // Check if first array has been exhausted
-    // if first_has_all_numbers && second_has_all_numbers && second.len() < first.len() {
-    //     println!("ff");
-    //     return false;
-    // }
-
-    println!("");
-
-    for (i, left) in first.iter().enumerate() {
-        if let Some(right) = second.get(i) {
-            // If they're both arrays, recursively return this method
-            if left.is_array() && right.is_array() {
-                return compare_array(left.as_array().unwrap(), right.as_array().unwrap(), mixed);
-            }
-
-            if left.is_number() && right.is_number() {
-                if left.as_u64() > right.as_u64() {
-                    ordered = false;
-                    break;
-                }
-            }
-
-            // If left is number and right is array
-            if left.is_number() && right.is_array() {
-                println!("l: {:?} \nr: {:?} \n {:?}", left, right, ordered);
-                println!("");
-                println!("{:?}", json!([left.as_u64()]).as_array().unwrap());
-                return compare_array(
-                    json!([left.as_u64()]).as_array().unwrap(),
-                    right.as_array().unwrap(),
-                    true,
-                );
-            }
-
-            // If right is number and left is array
-            if left.is_array() && right.is_number() {
-                return compare_array(
-                    left.as_array().unwrap(),
-                    json!([right.as_u64()]).as_array().unwrap(),
-                    true,
-                );
-            }
-        }
-    }
-
-    // first.iter().enumerate().for_each(|(i, left)| {
-    //     if let Some(right) = second.get(i) {
-    //         if right.is_number() && left.is_number() {
-    //             if left.as_u64() > right.as_u64() {
-    //                 ordered = false;
-    //                 return;
-    //             }
-    //         }
-
-    //         if left.is_array() && right.is_array() {
-    //             ordered = compare_array(left.as_array().unwrap(), right.as_array().unwrap(), mixed);
-    //             break ordered;
-    //         }
-
-    //         // If left is number and right is array
-    //         if left.is_number() && right.is_array() {
-    //             ordered = compare_array(
-    //                 json!([left.as_u64()]).as_array().unwrap(),
-    //                 right.as_array().unwrap(),
-    //                 true,
-    //             );
-    //             return;
-    //         }
-
-    //         // If right is number and left is array
-    //         if left.is_array() && right.is_number() {
-    //             ordered = compare_array(
-    //                 left.as_array().unwrap(),
-    //                 json!([right.as_u64()]).as_array().unwrap(),
-    //                 true,
-    //             );
-    //             return;
-    //         }
-    //     }
-    // });
-
-    ordered
 }
 
 fn parse(data: &str) -> Vec<Pair> {
