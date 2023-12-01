@@ -1,0 +1,5 @@
+run day part:
+    cargo run --package {{day}} --bin {{part}}
+
+create day:
+    cargo generate --path ./daily-template --name {{day}}
