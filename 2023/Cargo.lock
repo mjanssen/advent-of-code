@@ -5,6 +5,9 @@ version = 3
 [[package]]
 name = "aoc-2023"
 version = "0.1.0"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "day-1"
@@ -32,6 +35,14 @@ dependencies = [
 
 [[package]]
 name = "day-4"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "nom",
+]
+
+[[package]]
+name = "day-5"
 version = "0.1.0"
 dependencies = [
  "itertools",
