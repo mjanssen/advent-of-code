@@ -1,17 +1,12 @@
 #[derive(Debug, Clone)]
 struct Card {
     number: u16,
-    winning_numbers: Vec<u16>,
-    play_numbers: Vec<u16>,
+    matching: u16,
 }
 
 impl Card {
-    fn new(number: u16, winning_numbers: Vec<u16>, play_numbers: Vec<u16>) -> Self {
-        Self {
-            number,
-            winning_numbers,
-            play_numbers,
-        }
+    fn new(number: u16, matching: u16) -> Self {
+        Self { number, matching }
     }
 }
 
@@ -44,11 +39,15 @@ pub fn process(_input: &str) -> Result<String, Box<dyn std::error::Error>> {
         let winning_numbers = get_numbers(parts.first().copied());
         let play_numbers = get_numbers(parts.last().copied());
 
-        let card = Card::new(
-            card_number.parse::<u16>().unwrap_or(0),
-            winning_numbers,
-            play_numbers,
-        );
+        let mut matching = 0;
+        for num in play_numbers {
+            if winning_numbers.contains(&num) {
+                matching += 1;
+            }
+        }
+
+        let card = Card::new(card_number.parse::<u16>().unwrap_or(0), matching);
+
         cards.push(card);
     }
 
@@ -57,15 +56,8 @@ pub fn process(_input: &str) -> Result<String, Box<dyn std::error::Error>> {
     let mut ans = 0;
 
     while let Some(card) = initial.pop() {
-        let mut matching = 0;
-        for num in card.play_numbers {
-            if card.winning_numbers.contains(&num) {
-                matching += 1;
-            }
-        }
-
-        if matching > 0 {
-            for c in &cards[(card.number) as usize..=(card.number - 1 + matching) as usize] {
+        if card.matching > 0 {
+            for c in &cards[(card.number) as usize..=(card.number - 1 + card.matching) as usize] {
                 initial.push(c.clone());
             }
         }
