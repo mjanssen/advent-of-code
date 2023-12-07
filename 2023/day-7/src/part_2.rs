@@ -91,9 +91,7 @@ fn parse_line(input: &str) -> IResult<&str, Hand> {
         if c == 'J' {
             jokers += 1;
         }
-    }
 
-    for c in card.chars() {
         match card_occurences.get(&c) {
             Some(v) => card_occurences.insert(c, v + 1),
             _ => card_occurences.insert(c, 1),
