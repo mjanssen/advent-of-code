@@ -12,7 +12,6 @@ use nom::{
 
 #[derive(Debug)]
 struct Hand {
-    cards: String,
     score: ScoreTypes,
     card_values: (u8, u8, u8, u8, u8),
     bid: u32,
@@ -133,7 +132,6 @@ fn parse_line(input: &str) -> IResult<&str, Hand> {
     Ok((
         input,
         Hand {
-            cards: card.to_string(),
             score: hand_score,
             card_values: value_tuple,
             bid: value,
