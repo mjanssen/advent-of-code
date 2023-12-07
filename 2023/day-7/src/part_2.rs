@@ -151,10 +151,6 @@ pub fn process(input: &str) -> Result<String, Box<dyn std::error::Error>> {
 
     games.sort_unstable_by_key(|item| (item.score, item.card_values));
 
-    for hand in &games {
-        println!("{:?} {:?}", hand.cards, hand.score);
-    }
-
     Ok(games
         .iter()
         .enumerate()
