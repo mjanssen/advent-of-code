@@ -37,31 +37,33 @@ fn calculate_hand_value(
     current_score: &ScoreTypes,
     joker_check: bool,
 ) -> ScoreTypes {
+    use ScoreTypes::*;
+
     let mut hand_score = *current_score;
 
     let score = match occurence {
-        2 => ScoreTypes::OnePair,
-        3 => ScoreTypes::ThreeOfKind,
-        4 => ScoreTypes::FourOfKind,
-        5 => ScoreTypes::FiveOfKind,
-        _ => ScoreTypes::HighCard,
+        2 => OnePair,
+        3 => ThreeOfKind,
+        4 => FourOfKind,
+        5 => FiveOfKind,
+        _ => HighCard,
     };
 
-    if score == ScoreTypes::OnePair && hand_score == ScoreTypes::OnePair {
-        hand_score = ScoreTypes::TwoPair;
+    if score == OnePair && hand_score == OnePair {
+        hand_score = TwoPair;
     }
 
     if joker_check == false {
-        if score == ScoreTypes::OnePair && hand_score == ScoreTypes::ThreeOfKind
-            || score == ScoreTypes::ThreeOfKind && hand_score == ScoreTypes::OnePair
+        if score == OnePair && hand_score == ThreeOfKind
+            || score == ThreeOfKind && hand_score == OnePair
         {
-            hand_score = ScoreTypes::FullHouse;
+            hand_score = FullHouse;
         }
     }
 
     // Joker check
-    if current_score == &ScoreTypes::TwoPair && score == ScoreTypes::ThreeOfKind {
-        hand_score = ScoreTypes::FullHouse;
+    if current_score == &TwoPair && score == ThreeOfKind {
+        hand_score = FullHouse;
     }
 
     if score as u8 > hand_score as u8 {

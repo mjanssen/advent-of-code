@@ -33,6 +33,8 @@ enum ScoreTypes {
 }
 
 fn parse_line(input: &str) -> IResult<&str, Hand> {
+    use ScoreTypes::*;
+
     let (input, (card, value)) = separated_pair(
         alphanumeric1,
         tag(" "),
@@ -40,7 +42,7 @@ fn parse_line(input: &str) -> IResult<&str, Hand> {
     )(input)?;
 
     let mut card_occurences = HashMap::new();
-    let mut hand_score: ScoreTypes = ScoreTypes::HighCard;
+    let mut hand_score: ScoreTypes = HighCard;
     let mut card_values: Vec<u8> = vec![];
 
     for c in card.chars() {
@@ -61,21 +63,21 @@ fn parse_line(input: &str) -> IResult<&str, Hand> {
 
     for (_, occurence) in card_occurences {
         let score = match occurence {
-            2 => ScoreTypes::OnePair,
-            3 => ScoreTypes::ThreeOfKind,
-            4 => ScoreTypes::FourOfKind,
-            5 => ScoreTypes::FiveOfKind,
-            _ => ScoreTypes::HighCard,
+            2 => OnePair,
+            3 => ThreeOfKind,
+            4 => FourOfKind,
+            5 => FiveOfKind,
+            _ => HighCard,
         };
 
-        if score == ScoreTypes::OnePair && hand_score == ScoreTypes::OnePair {
-            hand_score = ScoreTypes::TwoPair;
+        if score == OnePair && hand_score == OnePair {
+            hand_score = TwoPair;
         }
 
-        if score == ScoreTypes::OnePair && hand_score == ScoreTypes::ThreeOfKind
-            || score == ScoreTypes::ThreeOfKind && hand_score == ScoreTypes::OnePair
+        if score == OnePair && hand_score == ThreeOfKind
+            || score == ThreeOfKind && hand_score == OnePair
         {
-            hand_score = ScoreTypes::FullHouse;
+            hand_score = FullHouse;
         }
 
         if score as u8 > hand_score as u8 {
