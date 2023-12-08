@@ -59,24 +59,26 @@ pub fn process_data(input: &str) -> IResult<&str, (Directions, Steps)> {
 pub fn process(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     let (_input, (directions, steps)) = process_data(input).expect("Expected to parse data");
 
-    let mut step_amount = 0u32;
-    let mut step_index = 0u32;
     let mut current: Step = "AAA".to_string();
 
-    while current.ne(&"ZZZ") {
-        if step_index == directions.len() as u32 {
-            step_index = 0;
-        }
-        
-        current = match directions[step_index as usize] {
-            "L" => steps.get(&current).unwrap().0.clone(),
-            "R" => steps.get(&current).unwrap().1.clone(),
-            _ => panic!("Shouldn't happen")
-        };
+    let answer: usize = directions
+        .iter()
+        .cycle()
+        .enumerate()
+        .find_map(|(index, direction)| {
+            current = match direction {
+                &"L" => steps.get(&current).unwrap().0.clone(),
+                &"R" => steps.get(&current).unwrap().1.clone(),
+                _ => panic!("Shouldn't happen"),
+            };
 
-        step_amount += 1;
-        step_index += 1;
-    }
-    
-    Ok(step_amount.to_string())
+            if current == "ZZZ" {
+                return Some(index + 1);
+            }
+
+            None
+        })
+        .expect("Expected result from cycle");
+
+    Ok(answer.to_string())
 }
