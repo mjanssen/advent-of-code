@@ -13,7 +13,7 @@ fn parse_data(input: &str) -> usize {
                 return vec![line];
             }
 
-            return vec![line, line];
+            return vec![line].repeat(1);
         })
         .fold(vec![vec![]], |mut matrix, line| {
             for (char_index, char) in line.chars().enumerate() {
@@ -31,7 +31,7 @@ fn parse_data(input: &str) -> usize {
                 return vec![line];
             }
 
-            return vec![line, line];
+            return vec![line].repeat(1);
         })
         .enumerate()
         .map(|(line_index, chars)| {
