@@ -25,13 +25,13 @@ fn parse_data(input: &str) -> usize {
 
             matrix
         })
-        .into_iter()
+        .iter()
         .flat_map(|line| {
             if line.contains(&'#') {
                 return vec![line];
             }
 
-            return vec![line.clone(), line.clone()];
+            return vec![line, line];
         })
         .enumerate()
         .map(|(line_index, chars)| {
